@@ -136,7 +136,10 @@
     "save": "Save",
     "saveFailed": "Failed to save, please try again later",
     "fullContentFetchLabel": "Auto-fetch full article content",
-    "fullContentFetchDesc": "When opened, automatically fetch the full content from the original webpage (useful for feeds that only provide a summary)."
+    "fullContentFetchDesc": "When opened, automatically fetch the full content from the original webpage (useful for feeds that only provide a summary).",
+    "authHeaderLabel": "Authorization header (optional)",
+    "authHeaderPlaceholder": "e.g. Bearer eyJhbGci...",
+    "authHeaderDesc": "Sent as the Authorization HTTP header when fetching this feed. Use this when the feed is behind a reverse proxy that requires a JWT or API key."
   },
   "addFolder": {
     "title": "New folder",

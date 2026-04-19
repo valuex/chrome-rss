@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Rss, Star, Trash2, Folder, ChevronRight, ChevronDown, Plus, FolderPlus, Pencil } from 'lucide-react';
+import { Rss, Star, Trash2, Folder, ChevronRight, ChevronDown, Plus, FolderPlus, Pencil, AlertCircle, WifiOff, ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ContextMenu } from '@/components/ui/ContextMenu';
 import { useAppStore } from '@/store';
@@ -33,6 +33,27 @@ function CountBadge({ count, tone = 'primary' }: { count: number; tone?: 'primar
       )}
     >
       {count}
+    </span>
+  );
+}
+
+function FeedErrorIcon({ errorMessage }: { errorMessage: string }) {
+  const isAuth = errorMessage.startsWith('AUTH_ERROR:');
+  const isNetwork = errorMessage.startsWith('NETWORK_ERROR:');
+  const label = isAuth
+    ? errorMessage.slice('AUTH_ERROR:'.length)
+    : isNetwork
+    ? errorMessage.slice('NETWORK_ERROR:'.length)
+    : errorMessage;
+
+  const Icon = isAuth ? ShieldAlert : isNetwork ? WifiOff : AlertCircle;
+  const colorClass = isAuth
+    ? 'text-amber-500 dark:text-amber-400'
+    : 'text-red-500 dark:text-red-400';
+
+  return (
+    <span title={label} className={cn('flex-shrink-0', colorClass)}>
+      <Icon className="w-3.5 h-3.5" />
     </span>
   );
 }
@@ -375,6 +396,9 @@ export const Sidebar: React.FC = () => {
         )}
         <span className="min-w-0 flex-1 text-left truncate">{feed.title}</span>
         <CountBadge count={feed.unreadCount ?? 0} />
+        {feed.lastFetchStatus === 'error' && feed.lastFetchError && (
+          <FeedErrorIcon errorMessage={feed.lastFetchError} />
+        )}
       </button>
     </ContextMenu>
   );

@@ -136,7 +136,10 @@
     "save": "保存",
     "saveFailed": "保存失败，请稍后重试",
     "fullContentFetchLabel": "自动获取文章全文",
-    "fullContentFetchDesc": "打开文章时，自动从原始网页获取完整内容（适合只提供摘要的订阅源）。"
+    "fullContentFetchDesc": "打开文章时，自动从原始网页获取完整内容（适合只提供摘要的订阅源）。",
+    "authHeaderLabel": "Authorization 请求头（可选）",
+    "authHeaderPlaceholder": "例如 Bearer eyJhbGci...",
+    "authHeaderDesc": "抓取此订阅源时将作为 Authorization HTTP 头发送。适用于通过需要 JWT 或 API Key 认证的反向代理访问的订阅源。"
   },
   "addFolder": {
     "title": "新建文件夹",

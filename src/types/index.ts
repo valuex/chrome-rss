@@ -15,6 +15,7 @@ export interface Feed {
   lastFetchError?: string;
   unreadCount: number;
   fullContentFetch?: boolean;
+  customHeaders?: Record<string, string>;
   createdAt: number;
   updatedAt: number;
 }

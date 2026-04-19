@@ -49,13 +49,18 @@ export function rssItemToArticle(
 }
 
 export class FeedFetcher {
-  async fetchFeed(feedUrl: string): Promise<RSSFeed> {
+  async fetchFeed(feedUrl: string, customHeaders?: Record<string, string>): Promise<RSSFeed> {
     try {
       const response = await fetch(feedUrl, {
         headers: {
           'Accept': 'application/rss+xml, application/xml, text/xml, application/atom+xml',
+          ...customHeaders,
         },
       });
+
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(`AUTH_ERROR:HTTP ${response.status}: ${response.statusText}`);
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -78,6 +83,16 @@ export class FeedFetcher {
       return await rssParser.parse(xmlText);
     } catch (error) {
       if (error instanceof Error) {
+        // Re-throw AUTH_ERROR prefix as-is so callers can display a targeted message.
+        if (error.message.startsWith('AUTH_ERROR:') || error.message.startsWith('NETWORK_ERROR:')) {
+          throw error;
+        }
+        // TypeError: Failed to fetch indicates a network-level failure (no connectivity,
+        // CORS block, SSL error, or the server redirected to a login page on a different
+        // origin and the redirect was blocked by CORS).
+        if (error instanceof TypeError) {
+          throw new Error(`NETWORK_ERROR:${error.message}`);
+        }
         throw new Error(`Failed to fetch feed: ${error.message}`);
       }
       throw new Error('Failed to fetch feed: Unknown error');
@@ -86,7 +101,7 @@ export class FeedFetcher {
 
   async updateFeedArticles(feed: Feed): Promise<FetchResult> {
     try {
-      const rssFeed = await this.fetchFeed(feed.url);
+      const rssFeed = await this.fetchFeed(feed.url, feed.customHeaders);
 
       // Get existing article GUIDs for this feed
       const existingArticles = await db.articles
@@ -144,7 +159,10 @@ export class FeedFetcher {
         newArticlesCount: newItems.length,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const rawMessage = error instanceof Error ? error.message : 'Unknown error';
+      // Preserve AUTH_ERROR / NETWORK_ERROR prefixes so the UI can render
+      // targeted error messages instead of a generic "cannot connect" label.
+      const errorMessage = rawMessage;
 
       await updateFeed(feed.id, {
         lastFetchTime: Date.now(),

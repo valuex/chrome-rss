@@ -25,6 +25,7 @@ export const EditFeedDialog: React.FC<EditFeedDialogProps> = ({
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [fullContentFetch, setFullContentFetch] = useState(false);
+  const [authHeader, setAuthHeader] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,6 +34,7 @@ export const EditFeedDialog: React.FC<EditFeedDialogProps> = ({
       setName(feed.title);
       setUrl(feed.url);
       setFullContentFetch(!!feed.fullContentFetch);
+      setAuthHeader(feed.customHeaders?.['Authorization'] ?? '');
       setError('');
     }
   }, [feed, open]);
@@ -59,7 +61,10 @@ export const EditFeedDialog: React.FC<EditFeedDialogProps> = ({
     setLoading(true);
     setError('');
     try {
-      await updateFeed(feed.id, { title: trimmedName, url: trimmedUrl, fullContentFetch });
+      const customHeaders: Record<string, string> | undefined = authHeader.trim()
+        ? { Authorization: authHeader.trim() }
+        : undefined;
+      await updateFeed(feed.id, { title: trimmedName, url: trimmedUrl, fullContentFetch, customHeaders });
       onOpenChange(false);
       onSaved();
     } catch (err) {
@@ -123,6 +128,26 @@ export const EditFeedDialog: React.FC<EditFeedDialogProps> = ({
                 onChange={(e) => setUrl(e.target.value)}
                 required
               />
+            </div>
+
+            <div>
+              <label
+                htmlFor="feed-auth-header"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                {t('editFeed.authHeaderLabel')}
+              </label>
+              <Input
+                id="feed-auth-header"
+                type="password"
+                placeholder={t('editFeed.authHeaderPlaceholder')}
+                value={authHeader}
+                onChange={(e) => setAuthHeader(e.target.value)}
+                autoComplete="off"
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t('editFeed.authHeaderDesc')}
+              </p>
             </div>
 
             <div className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
